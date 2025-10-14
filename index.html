@@ -1,18 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bla bla</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Clima</title>
+    <link rel="stylesheet" href="app.css">
 </head>
 <body>
-    <form action="/submit" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br><br>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <br><br>
-        <input type="submit" value="Submit">
+    
+    <div id="principal">
+        <h1>Climatología</h1>
+        <label for="name">Nombre de la ciudad</label>
+        <input type="text" id="name" name="name" required placeholder="Ciudad" />
+        <button id="enviar">Buscar</button>
+
+        <div class="informacion" id="info"></div>
+    </div>
+
+<script>
+    const apiKey = "ea5e0d7ae8628d8cb0e4d6ec1a5bbcc5";
+
+    document.getElementById("enviar").addEventListener("click", async () => {
+        const city = document.getElementById("name").value.trim();
+        const infoDiv = document.getElementById("info");
+
+        if (!city) {
+            infoDiv.innerHTML = '<p class="error">Por favor, ingresa el nombre de una ciudad.</p>';
+            return;
+        }
+
+        infoDiv.innerHTML = "Buscando...";
+
+        try {
+            
+            const geoRes = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=${apiKey}`);
+            if (!geoRes.ok) throw new Error("Error en la geolocalización");
+
+            const geoData = await geoRes.json();
+
+            if (geoData.length === 0) {
+                infoDiv.innerHTML = '<p class="error">Ciudad no encontrada.</p>';
+                return;
+            }
+
+            const { lat, lon, name, country } = geoData[0];
+
+
+            const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=es&appid=${apiKey}`);
+            if (!weatherRes.ok) throw new Error("Error al obtener el clima");
+
+            const weatherData = await weatherRes.json();
+
+            const temp = weatherData.main.temp.toFixed(1);
+            const description = weatherData.weather[0].description;
+            const iconCode = weatherData.weather[0].icon;
+            const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+            infoDiv.innerHTML = `
+                <h2>${name}, ${country}</h2>
+                <p><strong>Temperatura:</strong> ${temp} °C</p>
+                <p><strong>Clima:</strong> ${description.charAt(0).toUpperCase() + description.slice(1)}</p>
+                <img src="${iconUrl}" alt="${description}" class="iconoclima" />
+            `;
+
+        } catch (error) {
+            if (error.message.includes("Failed to fetch")) {
+                infoDiv.innerHTML = '<p class="error">No hay conexión. Intenta más tarde.</p>';
+            } else {
+                infoDiv.innerHTML = `<p class="error">${error.message}</p>`;
+            }
+        }
+    });
+</script>
 </body>
 </html>
