@@ -1,18 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bla bla</title>
+    <link rel="stylesheet" href="style.css">
+    <title>CinePlus </title>
+    <link rel="C:\Users\santh\OneDrive\Escritorio\parcial\parcial-web-1\style.css" href="C:\Users\santh\OneDrive\Escritorio\parcial\parcial-web-1\style.css">
 </head>
 <body>
-    <form action="/submit" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br><br>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <br><br>
-        <input type="submit" value="Submit">
+
+    <header> Cine - Cartelera Studio Ghibli</header>
+
+   
+    <div id="login">
+        <h2>Registro</h2>
+        <form id="registerForm">
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" required>
+            <label for="email">Correo:</label>
+            <input type="email" id="email" required>
+            <input type="submit" value="Registrarse">
+        </form>
+    </div>
+
+    
+    <div id="peliculas" style="display:none;">
+        <h2>Películas en cartelera </h2>
+        <div id="listaPeliculas"></div>
+        <button id="cerrarSesion">Cerrar sesión</button>
+    </div>
+
+    <script>
+        const API_URL = "https://ghibliapi.vercel.app/films";
+
+        const form = document.getElementById('registerForm');
+        const loginDiv = document.getElementById('login');
+        const peliculasDiv = document.getElementById('peliculas');
+        const listaPeliculas = document.getElementById('listaPeliculas');
+        const cerrarSesion = document.getElementById('cerrarSesion');
+
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('name').value;
+            localStorage.setItem('usuario', nombre);
+            loginDiv.style.display = 'none';
+            peliculasDiv.style.display = 'block';
+            cargarPeliculas();
+        });
+
+       
+        async function cargarPeliculas() {
+            try {
+                const respuesta = await fetch(API_URL);
+                const peliculas = await respuesta.json();
+                listaPeliculas.innerHTML = '';
+
+                peliculas.forEach(pelicula => {
+                    const div = document.createElement('div');
+                    div.classList.add('pelicula');
+                    div.innerHTML = `
+                        <img src="${pelicula.image}" alt="${pelicula.title}">
+                        <div>
+                            <h3>${pelicula.title}</h3>
+                            <p><strong>Año:</strong> ${pelicula.release_date}</p>
+                            <p>${pelicula.description.substring(0, 150)}...</p>
+                        </div>
+                    `;
+                    listaPeliculas.appendChild(div);
+                });
+            } catch (error) {
+                listaPeliculas.innerHTML = `<p>Error al cargar películas 😢</p>`;
+            }
+        }
+
+      
+        cerrarSesion.addEventListener('click', () => {
+            localStorage.removeItem('usuario');
+            peliculasDiv.style.display = 'none';
+            loginDiv.style.display = 'block';
+        });
+
+       
+        window.onload = () => {
+            const usuario = localStorage.getItem('usuario');
+            if (usuario) {
+                loginDiv.style.display = 'none';
+                peliculasDiv.style.display = 'block';
+                cargarPeliculas();
+            }
+        };
+    </script>
+
 </body>
 </html>
