@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Parcial</title>
+  <link rel="stylesheet" href="TP.css" />
+</head>
+<body>
+    <h1> 🎞 Buscador de Peliculas ❤ </h1>
+    <input type="text" id="buscar" placeholder="Escribe el nombre de una pelicula o dale buscar..." />
+    <button id="BotonBuscar">Buscar</button>
+
+    <ul id="resultados"></ul>
+    <div id="detalle" style="display: none;"></div>
+
+    <script>
+
+        const apiBase = "https://devsapihub.com/api-movies";
+
+            document.getElementById("BotonBuscar").addEventListener("click", async () => {
+
+        const termino = document.getElementById("buscar").value.trim().toLowerCase();
+        const resultados = document.getElementById("resultados");
+        const detalle = document.getElementById("detalle");
+
+            resultados.innerHTML = "";
+            detalle.style.display = "none";
+
+    try {
+
+        const respuesta = await fetch(apiBase);
+        const peliculas = await respuesta.json();
+        const filtradas = peliculas.filter(p => p.title.toLowerCase().includes(termino));
+
+        if (filtradas.length === 0) {
+
+            resultados.innerHTML = "<li>No se encontraron resultados.</li>";
+        return;
+
+        }
+
+        filtradas.forEach(pelicula => {
+
+            const li = document.createElement("li");
+
+        li.innerHTML = `▶ <strong> ${pelicula.title} </strong> (${pelicula.year}) 🎞`;
+        li.style.cursor = "pointer";
+        li.addEventListener("click", () => mostrarDetalle(pelicula.id));
+        resultados.appendChild(li);
+
+        });
+
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+
+    async function mostrarDetalle(id) {
+
+        const detalle = document.getElementById("detalle");
+
+    try {
+
+        const resp = await fetch(`${apiBase}/${id}`);
+        const p = await resp.json();
+
+        detalle.style.display = "block";
+        detalle.innerHTML = `<h1>${p.title} (${p.year})</h1>
+            <img src="${p.imageUrl}" alt="${p.title}">
+            <p><strong>- Genero:</strong> ${p.genre}</p>
+            <p><strong>- Descripcion:</strong> ${p.description}</p>
+            <p><strong>- Estrellas:</strong> ${p.stars}</p>`;
+
+        } catch (error) {
+            console.error('error:', error);
+        }
+    }
+
+    </script>
+
+</body>
+</html>
