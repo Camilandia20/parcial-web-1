@@ -1,18 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bla bla</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>App de Países</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <form action="/submit" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br><br>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <br><br>
-        <input type="submit" value="Submit">
+
+  <header>
+      <h1>APP DE PAÍSES</h1>
+      <div class="filters">
+          <input type="text" id="searchInput" placeholder="Buscar país..." />
+          <select id="regionSelect">
+              <option value="">Todas las regiones</option>
+              <option value="AFR">África</option>
+              <option value="LCN">América Latina y el Caribe</option>
+              <option value="EAS">Asia Oriental y Pacífico</option>
+              <option value="EUU">Europa y Asia Central</option>
+              <option value="MEA">Medio Oriente y Norte de África</option>
+              <option value="SAS">Asia Meridional</option>
+              <option value="NAC">América del Norte</option>
+          </select>
+      </div>
+  </header>
+
+  <main>
+      <div id="countriesContainer" class="grid-container"></div>
+      <p id="noResults" class="hidden">No se encontraron países.</p>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>
