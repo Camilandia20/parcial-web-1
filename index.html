@@ -3,16 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bla bla</title>
+    <title>App Cine</title>
+    <link rel="stylesheet" href="Style.css" />
 </head>
 <body>
-    <form action="/submit" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br><br>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <br><br>
-        <input type="submit" value="Submit">
+         <div class="container">
+        <h1>Buscador de Películas 🎬</h1>
+        <form id="searchForm">
+            <label for="searchInput">Nombre de la película:</label>
+            <input type="text" id="searchInput" placeholder="Ejemplo: Avengers" required />
+            <button type="submit">Buscar</button>
+        </form>
+
+        <div id="results" class="grid"></div>
+        <div id="movieDetails" class="modal hidden"></div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
