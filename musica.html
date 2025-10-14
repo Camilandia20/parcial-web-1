@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="musica.css">
+    <title>APP DE MÚSICA</title>
+</head>
+<body>
+  <h1>Buscador de Artistas</h1>
+  <form id="formulario">
+    <input type="text" id="busqueda" placeholder="Escribe el nombre del artista" required />
+    <button type="submit">Buscar</button>
+  </form>
+  <div id="resultado"></div>
+
+<script>
+  const formulario = document.getElementById('formulario');
+  const resultado = document.getElementById('resultado');
+
+  function jsonp(url, callbackName) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      const name = callbackName || 'jsonp_callback_' + Math.round(100000 * Math.random());
+      window[name] = function(data) {
+        delete window[name];
+        document.body.removeChild(script);
+        resolve(data);
+      };
+      script.src = url + (url.includes('?') ? '&' : '?') + 'output=jsonp&callback=' + name;
+      script.onerror = () => {
+        delete window[name];
+        document.body.removeChild(script);
+        reject(new Error('Error en JSONP'));
+      };
+      document.body.appendChild(script);
+    });
+  }
+
+  formulario.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    resultado.innerHTML = 'Buscando...';
+    const artistaBuscado = document.getElementById('busqueda').value.trim();
+    if (!artistaBuscado) {
+      resultado.innerHTML = '<p class="error">Por favor, ingresa un nombre de artista.</p>';
+      return;
+    }
+
+    try {
+      const searchData = await jsonp(`https://api.deezer.com/search/artist?q=${encodeURIComponent(artistaBuscado)}`);
+
+      if (!searchData.data || searchData.data.length === 0) {
+        resultado.innerHTML = `<p class="error">No se encontró el artista "${artistaBuscado}".</p>`;
+        return;
+      }
+
+      const artista = searchData.data[0];
+      const artistDetails = await jsonp(`https://api.deezer.com/artist/${artista.id}`);
+      const albumsData = await jsonp(`https://api.deezer.com/artist/${artista.id}/albums`);
+
+      let generos = [];
+      if (artistDetails.genres && artistDetails.genres.data) {
+        generos = artistDetails.genres.data.map(g => g.name);
+      }
+      const pais = 'No disponible';
+
+      const imagen = artista.picture_medium || '';
+      let albums = albumsData.data || [];
+      albums = albums.filter(a => a.release_date).sort((a,b) => b.release_date.localeCompare(a.release_date));
+
+      resultado.innerHTML = `
+        <div class="artista-card">
+          <div>
+            ${imagen ? `<img src="${imagen}" alt="Imagen de ${artista.name}" class="artista-img" />` : `<div class="artista-img">Sin imagen</div>`}
+          </div>
+          <div class="artista-info">
+            <h2>${artista.name}</h2>
+            <p><strong>País:</strong> ${pais}</p>
+            <p><strong>Género(s):</strong> ${generos.length ? generos.join(', ') : 'Desconocido'}</p>
+
+            <div class="album-list">
+              <h3>Álbumes:</h3>
+              ${albums.length ? albums.map(a => `<div class="album">${a.title} (${a.release_date.substring(0,4)})</div>`).join('') : '<p>No se encontraron álbumes.</p>'}
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      console.error(error);
+      resultado.innerHTML = `>Ocurrió un error al buscar el artista. Intenta nuevamente.`;
+    }
+  });
+</script>
+</body>   
+</html>
